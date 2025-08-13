@@ -6,7 +6,7 @@ import { db } from '../firebase'; // Ensure your Firebase config is correctly se
 import { v4 as uuidv4 } from 'uuid';
 import { collection, addDoc } from 'firebase/firestore';
 
-const inference = new HfInference("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");
+const inference = new HfInference(process.env.REACT_APP_HF_TOKEN);
 
 const ChatbotQuiz = () => {
   const [quizDetails, setQuizDetails] = useState({

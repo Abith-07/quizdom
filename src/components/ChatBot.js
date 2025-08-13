@@ -5,7 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // Instantiate HfInference with your API key
-const inference = new HfInference("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");
+const inference = new HfInference(process.env.REACT_APP_HF_TOKEN);
 
 const Chatbot = () => {
     const [input, setInput] = useState('');
