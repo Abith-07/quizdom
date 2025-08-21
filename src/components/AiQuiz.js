@@ -8,6 +8,7 @@ function AiQuiz() {
   const [subject, setSubject] = useState('');
   const [difficulty, setDifficulty] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const subjects = [
@@ -33,24 +34,63 @@ function AiQuiz() {
   const generateQuiz = async () => {
     if (!validateInputs()) return;
 
+    setLoading(true);
+
+    const GEMINI_API_KEY = "AIzaSyBV3GUouXySp3a4rrXPQan8Ebi3c7tARFE"; // replace
+    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+
+    const prompt = `
+    Generate exactly ${numQuestions} multiple-choice quiz questions 
+    on the subject "${subject}" with "${difficulty}" difficulty.
+    Each question must have 4 options (A–D) and a correct answer.  
+    Return only valid JSON in the format:
+
+    [
+      {
+        "question": "Question text?",
+        "options": ["A", "B", "C", "D"],
+        "answer": "A"
+      }
+    ]
+
+    Do not include explanations or extra text. Only JSON.
+    `;
+
     try {
-      const response = await axios.post('http://127.0.0.1:5000/generate_quiz', {
-        num_questions: parseInt(numQuestions, 10),
-        subject: subject === 'Mixed Quiz' ? '' : subject,
-        difficulty,
+      const response = await axios.post(GEMINI_API_URL, {
+        contents: [{ parts: [{ text: prompt }] }]
       });
 
-      // Navigate to AttendQuiz, passing quiz data and difficulty level
-      navigate('/attend-quiz', { 
-        state: { 
-          quiz: response.data, 
-          numQuestions, 
-          difficulty, // Pass the difficulty here
-          subject 
-        } 
+      let quizText =
+        response.data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+      if (!quizText) {
+        setError("Empty response from AI. Try again.");
+        setLoading(false);
+        return;
+      }
+
+      // Clean if Gemini wraps in code blocks
+      quizText = quizText.replace(/```json|```/g, '').trim();
+
+      let quizData = [];
+      try {
+        quizData = JSON.parse(quizText);
+      } catch (e) {
+        console.error("JSON parse error:", e, quizText);
+        setError("Invalid JSON from AI. Try again.");
+        setLoading(false);
+        return;
+      }
+
+      navigate('/attend-quiz', {
+        state: { quiz: quizData, numQuestions, difficulty, subject }
       });
     } catch (error) {
       console.error('Error generating quiz:', error);
+      setError("Failed to generate quiz. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -111,9 +151,10 @@ function AiQuiz() {
           <div className="flex items-center justify-center">
             <button
               onClick={generateQuiz}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              disabled={loading}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
             >
-              Generate Quiz
+              {loading ? "Generating..." : "Generate Quiz"}
             </button>
           </div>
         </div>

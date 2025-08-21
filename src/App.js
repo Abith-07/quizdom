@@ -73,6 +73,7 @@ import ExistingQuiz from './components/ExistingQuiz';
 import QuizDetail from './components/QuizDetail';
 import EditQuiz from './components/EditQuiz';
 import DiscussionForum from './components/Forum';
+import QuizAccess from './components/QuizAccess';
 function App() {
   return (
     <Router>
@@ -97,6 +98,7 @@ function App() {
           <Route path="/quiz-detail" element={<QuizDetail />} />
           <Route path="/edit-quiz/:id" element={<EditQuiz />} /> {/* Dynamic route for EditQuiz */}
           <Route path='/forum' element={<DiscussionForum/>} />
+          <Route path="/quiz-access" element={<QuizAccess />} />
         </Routes>
       </div>
     </Router>

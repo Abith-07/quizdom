@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
-import { HfInference } from "@huggingface/inference";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { db } from '../firebase'; // Ensure your Firebase config is correctly set up
+import { db } from '../firebase';
 import { v4 as uuidv4 } from 'uuid';
 import { collection, addDoc } from 'firebase/firestore';
-
-const inference = new HfInference(process.env.REACT_APP_HF_TOKEN);
 
 const ChatbotQuiz = () => {
   const [quizDetails, setQuizDetails] = useState({
@@ -17,7 +14,7 @@ const ChatbotQuiz = () => {
     startTime: '',
     endDate: '',
     endTime: '',
-    quizDuration: '' // Add quiz duration to the state
+    quizDuration: ''
   });
   const [loading, setLoading] = useState(false);
   const [generatedQuiz, setGeneratedQuiz] = useState(null);
@@ -31,52 +28,86 @@ const ChatbotQuiz = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const { subject, topic, numQuestions, startDate, startTime, endDate, endTime, quizDuration } = quizDetails;
-  
+
     if (!subject || !topic || !numQuestions || !startDate || !startTime || !endDate || !endTime || !quizDuration) {
       toast.error("Please fill in all fields");
       return;
     }
-  
+
     setLoading(true);
-  
+
     try {
       toast.info("Generating quiz code and access key...");
-  
+
       const quizCode = uuidv4().slice(0, 6).toUpperCase();
       const accessKey = uuidv4().slice(0, 4).toUpperCase();
       let generatedQuestions = [];
-  
+
       toast.info("Generating quiz questions...");
-  
-      // Generate questions in a single request
-      const response = await inference.chatCompletionStream({
-        model: "HuggingFaceH4/zephyr-7b-beta",
-        messages: [{ 
-          role: "user", 
-          content: `Generate ${numQuestions} unique quiz questions with 4 options each on ${topic} for ${subject}.` 
-        }],
-        max_tokens: 500 * numQuestions, // Adjust the max tokens according to the number of questions
-      });
-  
-      let fullResponse = "";
-      for await (const chunk of response) {
-        const chunkText = chunk.choices[0]?.delta?.content || '';
-        fullResponse += chunkText;
+
+      // Gemini API call
+      const geminiResponse = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.REACT_APP_GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `Generate ${numQuestions} unique quiz questions with 4 options each on ${topic} for ${subject}.
+If a question or option contains code, include the code as plain text, properly indented, and do NOT use Markdown formatting or backticks.
+Format each question as:
+Question: <question>
+code:<code>
+A) <option1>
+B) <option2>
+C) <option3>
+D) <option4>
+Correct Answer: <A/B/C/D>`
+              }]
+            }]
+          })
+        }
+      );
+
+      const geminiData = await geminiResponse.json();
+      if (!geminiData.candidates || !geminiData.candidates[0]?.content?.parts[0]?.text) {
+        throw new Error("No response from Gemini. Please try again.");
       }
-  
+
+      const fullResponse = geminiData.candidates[0].content.parts[0].text;
+
       // Parse the response and extract the questions
-      const questionsArray = fullResponse.trim().split(/\n\s*\n/); // Split the response by double line breaks
-  
-      questionsArray.forEach((questionBlock) => {
-        const [question, optionsText, answer] = parseResponse(questionBlock.trim());
-        generatedQuestions.push({
-          question,
-          options: optionsText.split('\n'),
-          answer,
-        });
+      const questionsArray = fullResponse.trim().split(/Question:/).filter(Boolean);
+
+      questionsArray.forEach((block) => {
+        const lines = block.trim().split('\n').filter(Boolean);
+
+        // Find indices for options and answer
+        const aIndex = lines.findIndex(line => line.trim().startsWith('A)'));
+        const bIndex = lines.findIndex(line => line.trim().startsWith('B)'));
+        const cIndex = lines.findIndex(line => line.trim().startsWith('C)'));
+        const dIndex = lines.findIndex(line => line.trim().startsWith('D)'));
+        const answerIndex = lines.findIndex(line => line.trim().startsWith('Correct Answer:'));
+
+        // Question: all lines from 0 to aIndex
+        const question = lines.slice(0, aIndex).join('\n').trim();
+
+        // Options: from their marker to the next marker
+        const options = [
+          lines.slice(aIndex, bIndex).map(l => l.replace(/^A\)\s*/, '')).join('\n').trim(),
+          lines.slice(bIndex, cIndex).map(l => l.replace(/^B\)\s*/, '')).join('\n').trim(),
+          lines.slice(cIndex, dIndex).map(l => l.replace(/^C\)\s*/, '')).join('\n').trim(),
+          lines.slice(dIndex, answerIndex).map(l => l.replace(/^D\)\s*/, '')).join('\n').trim(),
+        ];
+
+        // Extract answer
+        const answerLine = lines[answerIndex];
+        const answer = answerLine ? answerLine.replace("Correct Answer:", "").trim() : "";
+
+        generatedQuestions.push({ question, options, answer });
       });
-  
-      // Log the generated quiz data
+
       const quizData = {
         subject,
         topic,
@@ -90,19 +121,14 @@ const ChatbotQuiz = () => {
         createdAt: new Date(),
         questions: generatedQuestions,
       };
-  
-      console.log("Quiz Data to Store:", quizData); // Log quiz data for verification
-  
-      // Store quiz data in Firebase
+
       await addDoc(collection(db, 'created_quiz'), quizData);
-      
-      // Update the state to show the generated quiz
+
       setGeneratedQuiz(generatedQuestions);
       setModalOpen(true);
-  
-      // Notify user of successful creation
+
       toast.success(`Quiz created successfully! Quiz Code: ${quizCode} Access Key: ${accessKey}`);
-  
+
     } catch (error) {
       console.error("Error details: ", error);
       toast.error("An unexpected error occurred: " + error.message);
@@ -110,22 +136,47 @@ const ChatbotQuiz = () => {
       setLoading(false);
     }
   };
-  
 
-
-  const parseResponse = (response) => {
-    const lines = response.trim().split('\n');
-    const question = lines[0]?.trim();
-    const options = lines.slice(1, 5).map(option => option.trim()).join('\n');
-    const answer = lines[lines.length - 1]?.replace(/^Correct Answer: /, '').trim();
-    return [question, options, answer];
-  };
-
-  
   const closeModal = () => {
     setModalOpen(false);
-    setGeneratedQuiz(null); // Clear the generated quiz data
+    setGeneratedQuiz(null);
   };
+
+  // Helper to render question and code block
+  function renderQuestionWithCode(question) {
+    // Split at 'code:' (case-insensitive)
+    const [questionText, codePart] = question.split(/code:/i);
+    const elements = [];
+    let key = 0;
+
+    // Add the question text as normal text (left aligned)
+    if (questionText && questionText.trim()) {
+      elements.push(
+        <span key={key++} style={{ display: 'block', textAlign: 'left', marginBottom: '0.5rem' }}>
+          {questionText.trim()}
+        </span>
+      );
+    }
+
+    // If there is code, render it as a code block (left aligned, monospace)
+    if (codePart && codePart.trim()) {
+      elements.push(
+        <pre
+          key={key++}
+          className="bg-gray-100 rounded p-2 my-1 text-sm"
+          style={{
+            fontFamily: 'Fira Mono, Menlo, Monaco, Consolas, monospace',
+            textAlign: 'left',
+            margin: 0,
+          }}
+        >
+          <code>{codePart.trim()}</code>
+        </pre>
+      );
+    }
+
+    return elements;
+  }
 
   return (
     <div className="w-full h-full flex flex-col bg-white shadow-lg rounded-lg border border-gray-300">
@@ -240,30 +291,47 @@ const ChatbotQuiz = () => {
         </button>
       </form>
 
-
-{modalOpen && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 max-w-lg">
-      <h2 className="text-xl font-bold mb-4">Generated Quiz</h2>
-      <div className="max-h-80 overflow-y-auto"> {/* Added scrolling functionality */}
-        {generatedQuiz?.map((q, index) => (
-          <div key={index} className="my-4">
-            <p><strong>Q{index + 1}: </strong>{q.question}</p>
-            <ul>
-              {q.options.map((option, i) => (
-                <li key={i}>{option}</li>
+      {modalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 max-w-lg">
+            <h2 className="text-xl font-bold mb-4">Generated Quiz</h2>
+            <div className="max-h-80 overflow-y-auto">
+              {generatedQuiz?.map((q, index) => (
+                <div key={index} className="my-4">
+                  <p style={{ textAlign: 'left' }}>
+                    <strong>Q{index + 1}: </strong>
+                    {renderQuestionWithCode(q.question)}
+                  </p>
+                  <ul>
+                    {q.options.map((option, i) => (
+                      <li key={i}>
+                        {option.includes('\n') ? (
+                          <pre
+                            className="bg-gray-100 rounded p-2 my-1 text-sm"
+                            style={{
+                              fontFamily: 'Fira Mono, Menlo, Monaco, Consolas, monospace',
+                              textAlign: 'left',
+                              margin: 0,
+                            }}
+                          >
+                            <code>{option}</code>
+                          </pre>
+                        ) : (
+                          option
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  <p><strong>Correct Answer: </strong>{q.answer}</p>
+                </div>
               ))}
-            </ul>
-            <p><strong>Correct Answer: </strong>{q.answer}</p>
+            </div>
+            <button onClick={closeModal} className="mt-4 bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded-lg">
+              Close
+            </button>
           </div>
-        ))}
-      </div>
-      <button onClick={closeModal} className="mt-4 bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded-lg">
-        Close
-      </button>
-    </div>
-  </div>
-)}
+        </div>
+      )}
 
       <ToastContainer />
     </div>

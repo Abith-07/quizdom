@@ -3,6 +3,88 @@ import { useLocation } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+// Helper to render question and code block
+function renderQuestionWithCode(question) {
+  // Split at 'code:' (case-insensitive)
+  const [questionText, codePart] = question.split(/code:/i);
+  const elements = [];
+  let key = 0;
+
+  // Add the question text as normal text (left aligned)
+  if (questionText && questionText.trim()) {
+    elements.push(
+      <span key={key++} style={{ display: 'block', textAlign: 'left', marginBottom: '0.5rem' }}>
+        {questionText.trim()}
+      </span>
+    );
+  }
+
+  // Only render code block if codePart exists, is not empty, and does not contain "no code needed"
+  if (
+    codePart &&
+    codePart.trim() &&
+    !/^#?\s*no code needed\s*$/i.test(codePart.trim())
+  ) {
+    elements.push(
+      <pre
+        key={key++}
+        className="bg-gray-100 rounded p-2 my-1 text-sm"
+        style={{
+          fontFamily: 'Fira Mono, Menlo, Monaco, Consolas, monospace',
+          textAlign: 'left',
+          margin: 0,
+        }}
+      >
+        <code>{codePart.trim()}</code>
+      </pre>
+    );
+  }
+
+  return elements;
+}
+
+// Helper to render options and code block
+function renderOptionWithCode(option) {
+  // Split at 'code:' (case-insensitive)
+  const [optionText, codePart] = option.split(/code:/i);
+  const elements = [];
+  let key = 0;
+
+  // Show only the first line of optionText as the main option
+  const firstLine = optionText ? optionText.split('\n')[0].trim() : '';
+
+  if (firstLine) {
+    elements.push(
+      <span key={key++} style={{ display: 'inline', textAlign: 'left', marginBottom: '0.2rem' }}>
+        {firstLine}
+      </span>
+    );
+  }
+
+  // If there is code, render it as a code block (left aligned, monospace)
+  if (
+    codePart &&
+    codePart.trim() &&
+    !/^#?\s*no code needed\s*$/i.test(codePart.trim())
+  ) {
+    elements.push(
+      <pre
+        key={key++}
+        className="bg-gray-100 rounded p-2 my-1 text-sm"
+        style={{
+          fontFamily: 'Fira Mono, Menlo, Monaco, Consolas, monospace',
+          textAlign: 'left',
+          margin: 0,
+        }}
+      >
+        <code>{codePart.trim()}</code>
+      </pre>
+    );
+  }
+
+  return elements;
+}
+
 const QuizDetail = () => {
   const { state } = useLocation();
   const { quiz } = state || {};
@@ -107,11 +189,13 @@ const QuizDetail = () => {
               <ul className="list-none space-y-6 mt-4">
                 {quiz.questions.map((q, index) => (
                   <li key={index} className="p-4 bg-white border border-gray-200 rounded-lg shadow-md">
-                    <p className="font-medium text-gray-900">Q{index + 1}: {q.question}</p>
+                    <p className="font-medium text-gray-900" style={{ textAlign: 'left' }}>
+                      Q{index + 1}: {renderQuestionWithCode(q.question)}
+                    </p>
                     <ul className="list-decimal list-inside pl-6 mt-2 space-y-2">
                       {q.options.map((option, oIndex) => (
-                        <li key={oIndex} className="text-gray-700 hover:text-indigo-600 transition-colors">
-                          {option}
+                        <li key={oIndex} className="text-gray-700 hover:text-indigo-600 transition-colors" style={{ textAlign: 'left' }}>
+                          {renderOptionWithCode(option)}
                         </li>
                       ))}
                     </ul>
