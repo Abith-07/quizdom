@@ -47,7 +47,17 @@ export default function EnterQuizCode() {
 
   return (
     <div className="flex justify-center items-center h-screen bg-gradient-to-r from-blue-400 via-purple-500 to-indigo-400 relative">
-      <div className="w-full max-w-lg bg-white p-8 rounded-lg shadow-lg overflow-y-auto h-[80vh] flex items-center justify-center">
+      <div className="w-full max-w-lg bg-white p-8 rounded-lg shadow-lg overflow-y-auto h-[80vh] flex items-center justify-center relative">
+        <button
+          onClick={() => navigate('/homepage')}
+          className="absolute top-3 left-3 text-blue-600 hover:text-blue-800"
+          aria-label="Back to Home"
+          title="Back"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+            <path fillRule="evenodd" d="M9.53 3.97a.75.75 0 010 1.06L4.56 10h16.69a.75.75 0 010 1.5H4.56l4.97 4.97a.75.75 0 11-1.06 1.06l-6.25-6.25a.75.75 0 010-1.06l6.25-6.25a.75.75 0 011.06 0z" clipRule="evenodd" />
+          </svg>
+        </button>
         <div className="w-full">
           <h1 className="text-2xl font-bold mb-4 text-center">Enter Quiz Code</h1>
           <form onSubmit={handleSubmit} className="mb-4">

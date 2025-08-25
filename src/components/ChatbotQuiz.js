@@ -4,8 +4,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import { db } from '../firebase';
 import { v4 as uuidv4 } from 'uuid';
 import { collection, addDoc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 
 const ChatbotQuiz = () => {
+  const navigate = useNavigate();
   const [quizDetails, setQuizDetails] = useState({
     subject: '',
     topic: '',
@@ -179,161 +181,213 @@ Correct Answer: <A/B/C/D>`
   }
 
   return (
-    <div className="w-full h-full flex flex-col bg-white shadow-lg rounded-lg border border-gray-300">
-      <form onSubmit={handleSubmit} className="flex-1 overflow-auto p-4">
-        <div className="mb-4">
-          <label className="block text-gray-700">Subject:</label>
-          <input
-            type="text"
-            name="subject"
-            value={quizDetails.subject}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded-lg"
-            placeholder="Enter Subject"
-            required
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700">Topic:</label>
-          <input
-            type="text"
-            name="topic"
-            value={quizDetails.topic}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded-lg"
-            placeholder="Enter Topic"
-            required
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700">Number of Questions:</label>
-          <input
-            type="number"
-            name="numQuestions"
-            value={quizDetails.numQuestions}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded-lg"
-            min="1"
-            required
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700">Start Date:</label>
-          <input
-            type="date"
-            name="startDate"
-            value={quizDetails.startDate}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded-lg"
-            required
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700">Start Time:</label>
-          <input
-            type="time"
-            name="startTime"
-            value={quizDetails.startTime}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded-lg"
-            required
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700">End Date:</label>
-          <input
-            type="date"
-            name="endDate"
-            value={quizDetails.endDate}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded-lg"
-            required
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700">End Time:</label>
-          <input
-            type="time"
-            name="endTime"
-            value={quizDetails.endTime}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded-lg"
-            required
-          />
-        </div>
-
-        {/* Quiz Duration Field */}
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Quiz Duration (in minutes):</label>
-          <input
-            type="number"
-            name="quizDuration"
-            value={quizDetails.quizDuration}
-            onChange={handleInputChange}
-            className="w-full px-4 py-2 border rounded-lg"
-            placeholder="Enter duration in minutes"
-            required
-          />
-        </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 py-10 px-4">
+      <div className="max-w-6xl mx-auto relative">
         <button
-          type="submit"
-          className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
-          disabled={loading}
+          onClick={() => navigate('/cquizdashboard')}
+          className="absolute -top-2 left-0 text-white/90 hover:text-white"
+          aria-label="Back to Dashboard"
+          title="Back"
         >
-          {loading ? "Creating Quiz..." : "Create Quiz"}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7">
+            <path fillRule="evenodd" d="M9.53 3.97a.75.75 0 010 1.06L4.56 10h16.69a.75.75 0 010 1.5H4.56l4.97 4.97a.75.75 0 11-1.06 1.06l-6.25-6.25a.75.75 0 010-1.06l6.25-6.25a.75.75 0 011.06 0z" clipRule="evenodd" />
+          </svg>
         </button>
-      </form>
+        <h1 className="text-white text-3xl md:text-4xl font-extrabold text-center mb-8 drop-shadow-sm">AI-powered Quiz Builder</h1>
 
-      {modalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 max-w-lg">
-            <h2 className="text-xl font-bold mb-4">Generated Quiz</h2>
-            <div className="max-h-80 overflow-y-auto">
-              {generatedQuiz?.map((q, index) => (
-                <div key={index} className="my-4">
-                  <p style={{ textAlign: 'left' }}>
-                    <strong>Q{index + 1}: </strong>
-                    {renderQuestionWithCode(q.question)}
-                  </p>
-                  <ul>
-                    {q.options.map((option, i) => (
-                      <li key={i}>
-                        {option.includes('\n') ? (
-                          <pre
-                            className="bg-gray-100 rounded p-2 my-1 text-sm"
-                            style={{
-                              fontFamily: 'Fira Mono, Menlo, Monaco, Consolas, monospace',
-                              textAlign: 'left',
-                              margin: 0,
-                            }}
-                          >
-                            <code>{option}</code>
-                          </pre>
-                        ) : (
-                          option
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                  <p><strong>Correct Answer: </strong>{q.answer}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Form Card */}
+          <div className="bg-white/95 backdrop-blur rounded-xl shadow-lg border border-white/40 p-6 md:p-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Quiz Details</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1">Subject</label>
+                  <input
+                    type="text"
+                    name="subject"
+                    value={quizDetails.subject}
+                    onChange={handleInputChange}
+                    className="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="e.g., Computer Networks"
+                    required
+                  />
                 </div>
-              ))}
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1">Topic</label>
+                  <input
+                    type="text"
+                    name="topic"
+                    value={quizDetails.topic}
+                    onChange={handleInputChange}
+                    className="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="e.g., Routing Protocols"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-1">
+                  <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1">Questions</label>
+                  <input
+                    type="number"
+                    name="numQuestions"
+                    value={quizDetails.numQuestions}
+                    onChange={handleInputChange}
+                    className="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    min="1"
+                    required
+                  />
+                </div>
+                <div className="sm:col-span-1">
+                  <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1">Duration (min)</label>
+                  <input
+                    type="number"
+                    name="quizDuration"
+                    value={quizDetails.quizDuration}
+                    onChange={handleInputChange}
+                    className="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="e.g., 30"
+                    required
+                  />
+                </div>
+              </div>
+
+              <h3 className="text-sm font-semibold text-gray-800 mt-2">Schedule</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1">Start Date</label>
+                  <input
+                    type="date"
+                    name="startDate"
+                    value={quizDetails.startDate}
+                    onChange={handleInputChange}
+                    className="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1">Start Time</label>
+                  <input
+                    type="time"
+                    name="startTime"
+                    value={quizDetails.startTime}
+                    onChange={handleInputChange}
+                    className="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1">End Date</label>
+                  <input
+                    type="date"
+                    name="endDate"
+                    value={quizDetails.endDate}
+                    onChange={handleInputChange}
+                    className="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1">End Time</label>
+                  <input
+                    type="time"
+                    name="endTime"
+                    value={quizDetails.endTime}
+                    onChange={handleInputChange}
+                    className="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="mt-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                disabled={loading}
+              >
+                {loading && (
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  </svg>
+                )}
+                {loading ? "Creating Quiz..." : "Create Quiz"}
+              </button>
+            </form>
+          </div>
+
+          {/* Info Card */}
+          <div className="bg-white/90 backdrop-blur rounded-xl shadow-lg border border-white/40 p-6 md:p-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">What will be generated?</h2>
+            <ul className="space-y-3 text-gray-700">
+              <li className="flex items-start gap-3">
+                <span className="mt-1 h-2 w-2 rounded-full bg-indigo-600"></span>
+                A quiz with the exact number of questions you request, each with four options and one correct answer.
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-1 h-2 w-2 rounded-full bg-indigo-600"></span>
+                If a question or option contains code, it will be displayed clearly in a readable code block.
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-1 h-2 w-2 rounded-full bg-indigo-600"></span>
+                We also generate a unique Quiz Code and Access Key and store everything securely.
+              </li>
+            </ul>
+            <div className="mt-6 p-4 rounded-lg bg-gray-50 border">
+              <p className="text-sm text-gray-600">Tip: Be specific with the topic (e.g., "Dijkstra vs. Bellman-Ford") for higher quality questions.</p>
             </div>
-            <button onClick={closeModal} className="mt-4 bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded-lg">
-              Close
-            </button>
           </div>
         </div>
-      )}
 
-      <ToastContainer />
+        {/* Modal */}
+        {modalOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
+            <div className="bg-white rounded-xl shadow-xl w-11/12 max-w-3xl p-6 md:p-8">
+              <h2 className="text-2xl font-bold mb-4 text-gray-900">Generated Quiz</h2>
+              <div className="max-h-[60vh] overflow-y-auto pr-2">
+                {generatedQuiz?.map((q, index) => (
+                  <div key={index} className="my-4">
+                    <p style={{ textAlign: 'left' }}>
+                      <strong>Q{index + 1}: </strong>
+                      {renderQuestionWithCode(q.question)}
+                    </p>
+                    <ul className="mt-2 list-disc pl-5 text-gray-800">
+                      {q.options.map((option, i) => (
+                        <li key={i}>
+                          {option.includes('\n') ? (
+                            <pre
+                              className="bg-gray-100 rounded p-2 my-1 text-sm"
+                              style={{
+                                fontFamily: 'Fira Mono, Menlo, Monaco, Consolas, monospace',
+                                textAlign: 'left',
+                                margin: 0,
+                              }}
+                            >
+                              <code>{option}</code>
+                            </pre>
+                          ) : (
+                            option
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-1 text-indigo-700"><strong>Correct Answer: </strong>{q.answer}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 flex justify-end">
+                <button onClick={closeModal} className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <ToastContainer />
+      </div>
     </div>
   );
 };

@@ -22,7 +22,17 @@ const CQuizDashboard = () => {
     <div>
       <Header />
       <div className="min-h-screen flex flex-col items-center justify-center py-12 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-400 via-purple-500 to-indigo-400"> {/* Gradient background */}
-        <div className="max-w-4xl w-full p-10 bg-white rounded-xl shadow-md">
+        <div className="max-w-4xl w-full p-10 bg-white rounded-xl shadow-md relative">
+          <button
+            onClick={() => navigate('/homepage')}
+            className="absolute top-4 left-4 text-blue-600 hover:text-blue-800"
+            aria-label="Back to Home"
+            title="Back"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+              <path fillRule="evenodd" d="M9.53 3.97a.75.75 0 010 1.06L4.56 10h16.69a.75.75 0 010 1.5H4.56l4.97 4.97a.75.75 0 11-1.06 1.06l-6.25-6.25a.75.75 0 010-1.06l6.25-6.25a.75.75 0 011.06 0z" clipRule="evenodd" />
+            </svg>
+          </button>
           <h2 className="text-4xl font-extrabold text-gray-900 text-center mb-8">Quiz Dashboard</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             

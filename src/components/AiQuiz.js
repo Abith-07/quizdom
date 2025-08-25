@@ -98,7 +98,17 @@ function AiQuiz() {
     <div>
       <Header />
       <div className="bg-primary-bg bg-fixed bg-cover w-full h-fit flex items-center justify-center min-h-screen p-4">
-        <div className="bg-white p-8 rounded-lg shadow-md max-w-2xl w-full">
+        <div className="bg-white p-8 rounded-lg shadow-md max-w-2xl w-full relative">
+          <button
+            onClick={() => navigate('/homepage')}
+            className="absolute top-3 left-3 text-blue-600 hover:text-blue-800"
+            aria-label="Back to Home"
+            title="Back"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+              <path fillRule="evenodd" d="M9.53 3.97a.75.75 0 010 1.06L4.56 10h16.69a.75.75 0 010 1.5H4.56l4.97 4.97a.75.75 0 11-1.06 1.06l-6.25-6.25a.75.75 0 010-1.06l6.25-6.25a.75.75 0 011.06 0z" clipRule="evenodd" />
+            </svg>
+          </button>
           <h1 className="text-2xl font-bold mb-4 text-center">AI Quiz Generator</h1>
           {error && (
             <div className="bg-red-200 text-red-800 p-3 rounded mb-4">

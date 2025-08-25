@@ -5,10 +5,12 @@ import { v4 as uuidv4 } from 'uuid'; // For generating quiz codes and access key
 import { ToastContainer, toast } from 'react-toastify'; // Import Toastify
 import 'react-toastify/dist/ReactToastify.css'; // Import Toastify CSS
 import { getAuth } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
 const CreateQuizDashBoard = () => {
   const auth = getAuth();
   const userId = auth.currentUser ? auth.currentUser.uid : null;
+  const navigate = useNavigate();
 
   const [subject, setSubject] = useState('');
   const [topic, setTopic] = useState('');
@@ -99,7 +101,17 @@ const CreateQuizDashBoard = () => {
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col items-center justify-center py-12">
       <ToastContainer />
-      <div className="max-w-4xl w-full p-10 bg-white rounded-xl shadow-md">
+      <div className="max-w-4xl w-full p-10 bg-white rounded-xl shadow-md relative">
+        <button
+          onClick={() => navigate('/cquizdashboard')}
+          className="absolute top-4 left-4 text-blue-600 hover:text-blue-800"
+          aria-label="Back"
+          title="Back"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+            <path fillRule="evenodd" d="M9.53 3.97a.75.75 0 010 1.06L4.56 10h16.69a.75.75 0 010 1.5H4.56l4.97 4.97a.75.75 0 11-1.06 1.06l-6.25-6.25a.75.75 0 010-1.06l6.25-6.25a.75.75 0 011.06 0z" clipRule="evenodd" />
+          </svg>
+        </button>
         <h2 className="text-4xl font-extrabold text-gray-900 text-center mb-8">Create New Quiz</h2>
 
         {/* Subject Field */}
@@ -247,13 +259,22 @@ const CreateQuizDashBoard = () => {
         </div>
 
         {/* Submit Button */}
-        <button
-          type="button"
-          onClick={handleSubmit}
-          className="bg-indigo-600 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded-lg w-full"
-        >
-          Submit Quiz
-        </button>
+        <div className="flex gap-4">
+          <button
+            type="button"
+            onClick={() => navigate('/cquizdashboard')}
+            className="bg-gray-300 hover:bg-gray-400 text-gray-900 font-bold py-2 px-4 rounded-lg w-1/2"
+          >
+            Back to Dashboard
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="bg-indigo-600 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded-lg w-1/2"
+          >
+            Submit Quiz
+          </button>
+        </div>
       </div>
     </div>
   );

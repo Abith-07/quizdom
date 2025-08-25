@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Modal from 'react-modal';
 import sp from '../Assets/score-logo.png';
 import * as faceapi from 'face-api.js';
@@ -90,12 +90,14 @@ function renderOptionWithCode(option) {
 
 export default function QuizAccess() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { quiz } = location.state || {};
   const [userAnswers, setUserAnswers] = useState(Array(quiz?.questions?.length || 0).fill(''));
   const [score, setScore] = useState(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [error, setError] = useState(null);
   const [answersModalIsOpen, setAnswersModalIsOpen] = useState(false);
+  const [backConfirmIsOpen, setBackConfirmIsOpen] = useState(false);
 
   // Proctoring states
   const [proctoringError, setProctoringError] = useState('');
@@ -280,6 +282,13 @@ export default function QuizAccess() {
     setModalIsOpen(true);
   };
 
+  const handleEndQuiz = () => {
+    if (detectionIntervalRef.current) clearInterval(detectionIntervalRef.current);
+    stopWebcam();
+    setBackConfirmIsOpen(false);
+    navigate('/EnterQuizCode');
+  };
+
   const closeModal = () => {
     setModalIsOpen(false);
     setError(null);
@@ -288,7 +297,7 @@ export default function QuizAccess() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-primary-bg bg-fixed bg-cover p-4">
       {/* Webcam and proctoring warnings */}
-      <div className="absolute top-0 right-0 p-4 bg-white shadow-md rounded-lg">
+      <div className="fixed top-4 right-4 z-40 p-4 bg-white shadow-md rounded-lg">
         <video ref={videoRef} className="w-40 h-40 border-2 border-red-500"></video>
         {proctoringError && <p className="text-red-500">{proctoringError}</p>}
         {tabSwitchWarning && <p className="text-red-500">{tabSwitchWarning}</p>}
@@ -303,6 +312,12 @@ export default function QuizAccess() {
           <div className="w-full text-center">
             <h2 className="text-3xl font-bold text-red-600 mb-4">Quiz Violated</h2>
             <p className="text-lg text-gray-700">You have exceeded the allowed number of proctoring violations. The quiz is now closed.</p>
+            <button
+              onClick={handleEndQuiz}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-6"
+            >
+              Back
+            </button>
           </div>
         ) : quiz?.questions?.length > 0 ? (
           <div>
@@ -344,6 +359,12 @@ export default function QuizAccess() {
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
             >
               Submit Quiz
+            </button>
+            <button
+              onClick={() => setBackConfirmIsOpen(true)}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded w-full mt-3"
+            >
+              Back
             </button>
           </div>
         ) : (
@@ -433,6 +454,33 @@ export default function QuizAccess() {
             >
               Close
             </button>
+          </div>
+        </Modal>
+
+        {/* Back Confirmation Modal */}
+        <Modal
+          isOpen={backConfirmIsOpen}
+          onRequestClose={() => setBackConfirmIsOpen(false)}
+          className="fixed inset-0 flex items-center justify-center z-50"
+          overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+        >
+          <div className="bg-white p-8 rounded-lg shadow-md max-w-md mx-auto">
+            <h2 className="text-xl font-bold mb-2 text-center">Leave Quiz?</h2>
+            <p className="text-center text-gray-700">Do you want to end the quiz or continue?</p>
+            <div className="flex gap-4 mt-6">
+              <button
+                onClick={handleEndQuiz}
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-1/2"
+              >
+                End Quiz
+              </button>
+              <button
+                onClick={() => setBackConfirmIsOpen(false)}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-900 font-bold py-2 px-4 rounded w-1/2"
+              >
+                Continue Quiz
+              </button>
+            </div>
           </div>
         </Modal>
       </div>
