@@ -7,14 +7,14 @@ import { getStorage } from "firebase/storage"; // Import getStorage for Firebase
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyD5Xl9YJYoJwW7lul1l9pIqROTFi6L-zkk",
-  authDomain: "quiz-generator-14598.firebaseapp.com",
-  databaseURL: "https://quiz-generator-14598-default-rtdb.firebaseio.com",
-  projectId: "quiz-generator-14598",
-  storageBucket: "quiz-generator-14598.appspot.com",
-  messagingSenderId: "760827227069",
-  appId: "1:760827227069:web:830c0ca73c3044b82e40d4",
-  measurementId: "G-ECC0BKM6QH",
+  apiKey: "AIzaSyA45I5f4Jf81n6ks-54Qb8MjQuaRNvOPIY",
+  authDomain: "quizdom-3ce85.firebaseapp.com",
+  databaseURL: "https://quizdom-3ce85-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "quizdom-3ce85",
+  storageBucket: "quizdom-3ce85.firebasestorage.app",
+  messagingSenderId: "364493119142",
+  appId: "1:364493119142:web:7456604382f2a46dd35e67",
+  measurementId: "G-ZJLVZLLNG2"
 };
 
 // Initialize Firebase
