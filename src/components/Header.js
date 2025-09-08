@@ -49,12 +49,13 @@ export default function Header() {
         <a href="/homepage" className="text-white hover:bg-white hover:text-black rounded-lg p-1 transition-colors duration-300">
           Home
         </a>
-        {/* <a href="/homepage" className="text-white hover:bg-white hover:text-black rounded-lg p-1 transition-colors duration-300">
-          Quiz
-        </a>
         <a href="/leaderboard" className="text-white hover:bg-white hover:text-black rounded-lg p-1 transition-colors duration-300">
           LeaderBoard
         </a>
+        {/* <a href="/homepage" className="text-white hover:bg-white hover:text-black rounded-lg p-1 transition-colors duration-300">
+          Quiz
+        </a>
+        
         <a href="/forum" className="text-white hover:bg-white hover:text-black rounded-lg p-1 transition-colors duration-300">
           Forum
         </a>

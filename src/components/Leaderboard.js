@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 import Header from './Header'; // Assume you have a Header component
 import Lottie from "lottie-react";
 import Loading from "../Assets/LoadingLottie.json";
@@ -9,6 +10,8 @@ const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const auth = getAuth();
+  const currentUserId = auth.currentUser ? auth.currentUser.uid : null;
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -96,6 +99,8 @@ const Leaderboard = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 text-center uppercase tracking-wider">Rank</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 text-center uppercase tracking-wider">Name</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500  text-center uppercase tracking-wider">Points</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500  text-center uppercase tracking-wider">Quiz</th>
+                    <th className="px-6 py-3"></th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -106,6 +111,20 @@ const Leaderboard = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.points}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.quizCode || '-'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                        {currentUserId && user.ownerId === currentUserId && (
+                          <button
+                            onClick={async () => {
+                              await deleteDoc(doc(db, 'leaderboard', user.id));
+                              setLeaderboard(prev => prev.filter(x => x.id !== user.id));
+                            }}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

@@ -5,9 +5,11 @@ import { db } from '../firebase';
 import { v4 as uuidv4 } from 'uuid';
 import { collection, addDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import { getAuth } from 'firebase/auth';
 
 const ChatbotQuiz = () => {
   const navigate = useNavigate();
+  const auth = getAuth();
   const [quizDetails, setQuizDetails] = useState({
     subject: '',
     topic: '',
@@ -122,6 +124,9 @@ Correct Answer: <A/B/C/D>`
         quizDuration,
         createdAt: new Date(),
         questions: generatedQuestions,
+        ownerId: auth.currentUser ? auth.currentUser.uid : null,
+        ownerEmail: auth.currentUser ? (auth.currentUser.email || '') : '',
+        ownerName: auth.currentUser ? (auth.currentUser.displayName || '') : '',
       };
 
       await addDoc(collection(db, 'created_quiz'), quizData);

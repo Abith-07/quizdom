@@ -10,6 +10,8 @@ import { useNavigate } from 'react-router-dom';
 const CreateQuizDashBoard = () => {
   const auth = getAuth();
   const userId = auth.currentUser ? auth.currentUser.uid : null;
+  const ownerEmail = auth.currentUser ? (auth.currentUser.email || '') : '';
+  const ownerName = auth.currentUser ? (auth.currentUser.displayName || '') : '';
   const navigate = useNavigate();
 
   const [subject, setSubject] = useState('');
@@ -86,6 +88,9 @@ const CreateQuizDashBoard = () => {
         quizCode,
         accessKey,
         createdAt: new Date(),
+        ownerId: userId,
+        ownerEmail: ownerEmail,
+        ownerName: ownerName,
       });
 
       toast.success(`Quiz Created! Quiz Code: ${quizCode}, Access Key: ${accessKey}`);

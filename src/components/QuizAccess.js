@@ -3,6 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Modal from 'react-modal';
 import sp from '../Assets/score-logo.png';
 import * as faceapi from 'face-api.js';
+import { db } from '../firebase';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
 Modal.setAppElement('#root');
 
@@ -253,7 +256,7 @@ export default function QuizAccess() {
   };
 
   // Submit quiz
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (userAnswers.includes('')) {
       setError('Please answer all questions before submitting.');
       setModalIsOpen(true);
@@ -269,6 +272,32 @@ export default function QuizAccess() {
     });
 
     setScore(calculatedScore);
+
+    // Persist to leaderboard with one-attempt rule
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (user) {
+        const docId = `${quiz.quizCode || quiz.id || 'unknown'}_${user.uid}`;
+        const lbRef = doc(db, 'leaderboard', docId);
+        const existing = await getDoc(lbRef);
+        if (existing.exists()) {
+          setError('You have already attempted this quiz. Only one attempt is allowed.');
+        } else {
+          await setDoc(lbRef, {
+            userId: user.uid,
+            name: user.displayName || user.email || 'User',
+            points: calculatedScore,
+            quizCode: quiz.quizCode || null,
+            ownerId: quiz.ownerId || null,
+            createdAt: serverTimestamp(),
+          });
+        }
+      }
+    } catch (e) {
+      // fall back to modal showing score; error can be shown in error area
+      setError(e?.message || 'Failed to save score.');
+    }
 
     // Stop proctoring and webcam
     if (detectionIntervalRef.current) clearInterval(detectionIntervalRef.current);

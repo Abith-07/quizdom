@@ -5,10 +5,13 @@ import { FaEdit, FaTrash, FaEye } from 'react-icons/fa'; // Import icons for edi
 import { ToastContainer, toast } from 'react-toastify'; // Import Toastify
 import 'react-toastify/dist/ReactToastify.css'; // Import Toastify CSS
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
+import { getAuth } from 'firebase/auth';
 
 const ExistingQuiz = ({ userId }) => {
   const [quizzes, setQuizzes] = useState({}); // Object to store quizzes grouped by subject
   const navigate = useNavigate(); // Hook for navigation
+  const auth = getAuth();
+  const currentUserId = auth.currentUser ? auth.currentUser.uid : null;
 
   useEffect(() => {
     const fetchQuizzes = async () => {
@@ -94,16 +97,23 @@ const ExistingQuiz = ({ userId }) => {
                     {quizzes[subject][topic].map((quiz) => (
                       <div key={quiz.id} className="flex justify-between items-center mb-2 p-2 border-b">
                         <span className="font-medium text-gray-800">Quiz Code: {quiz.quizCode}</span>
-                        <div className="flex space-x-2">
-                          <button onClick={() => handleViewQuiz(quiz)} className="text-green-600 hover:text-green-800">
-                            <FaEye />
-                          </button>
-                          <button onClick={() => handleEditQuiz(quiz.id)} className="text-blue-600 hover:text-blue-800">
-                            <FaEdit />
-                          </button>
-                          <button onClick={() => handleDeleteQuiz(quiz.id)} className="text-red-600 hover:text-red-800">
-                            <FaTrash />
-                          </button>
+                        <div className="flex flex-col items-end">
+                          <span className="text-xs text-gray-500">Owner: {quiz.ownerName || quiz.ownerEmail || 'Unknown'}</span>
+                          <div className="flex space-x-2 mt-1">
+                            <button onClick={() => handleViewQuiz(quiz)} className="text-green-600 hover:text-green-800">
+                              <FaEye />
+                            </button>
+                            {currentUserId && quiz.ownerId === currentUserId && (
+                              <>
+                                <button onClick={() => handleEditQuiz(quiz.id)} className="text-blue-600 hover:text-blue-800">
+                                  <FaEdit />
+                                </button>
+                                <button onClick={() => handleDeleteQuiz(quiz.id)} className="text-red-600 hover:text-red-800">
+                                  <FaTrash />
+                                </button>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
