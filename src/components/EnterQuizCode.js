@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { db } from '../firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import { getAuth } from 'firebase/auth';
 
 export default function EnterQuizCode() {
   const [quizCode, setQuizCode] = useState('');
@@ -12,6 +13,19 @@ export default function EnterQuizCode() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Check attempt first
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (user) {
+        const attemptId = `${quizCode}_${user.uid}`;
+        const attemptRef = doc(db, 'leaderboard', attemptId);
+        const attemptSnap = await getDoc(attemptRef);
+        if (attemptSnap.exists()) {
+          setError('You have already attempted this quiz. Only one attempt is allowed.');
+          return;
+        }
+      }
+
       const quizQuery = query(collection(db, 'created_quiz'), where('quizCode', '==', quizCode));
       const querySnapshot = await getDocs(quizQuery);
 
