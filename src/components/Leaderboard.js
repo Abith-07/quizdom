@@ -110,7 +110,13 @@ const Leaderboard = () => {
                         {getRankIcon(user.rank)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.points}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.points === 'violated' ? (
+                          <span className="text-red-600 font-semibold">Violated</span>
+                        ) : (
+                          user.points
+                        )}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.quizCode || '-'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
                         {currentUserId && user.ownerId === currentUserId && (

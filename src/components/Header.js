@@ -52,6 +52,10 @@ export default function Header() {
         <a href="/leaderboard" className="text-white hover:bg-white hover:text-black rounded-lg p-1 transition-colors duration-300">
           LeaderBoard
         </a>
+        <a href="/dashboard" className="text-white hover:bg-white hover:text-black rounded-lg p-1 transition-colors duration-300">
+          Dashboard
+        </a>
+        
         {/* <a href="/homepage" className="text-white hover:bg-white hover:text-black rounded-lg p-1 transition-colors duration-300">
           Quiz
         </a>
@@ -107,6 +111,20 @@ export default function Header() {
                 onClick={toggleMenu}
               >
                 LeaderBoard
+              </a>
+              <a
+                href="/dashboard"
+                className="text-white text-sm my-2"
+                onClick={toggleMenu}
+              >
+                Dashboard
+              </a>
+              <a
+                href="/tournament"
+                className="text-white text-sm my-2"
+                onClick={toggleMenu}
+              >
+                Tournament
               </a>
               <a
                 href="#Projects"

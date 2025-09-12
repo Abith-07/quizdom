@@ -1,16 +1,4 @@
-// import React from 'react';
-// import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-// import './App.css';
-// import Quiz from './components/Quiz';
-// import AiQuiz from './components/AiQuiz';
-// import Login from './components/Login';
-// import Register from './components/Register';
-// import Homepage from './components/Homepage';
-// import Profile from './components/Profile';
-// import AttendQuiz from './components/AttendQuiz';
-// import CreateQuizDashboard from './components/CreateQuizDashboard';
-// import LeaderBoard from './components/Leaderboard';
-// import QuizPage from './components/QuizPage';
+
 // import EnterQuizCode from './components/EnterQuizCode';
 // import MainHome from './components/MainHome';
 // import CQuizDashboard from './components/CQuizDashboard';
@@ -53,7 +41,7 @@
 // export default App;
 
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, Link } from 'react-router-dom';
 import './App.css';
 import Quiz from './components/Quiz';
 import AiQuiz from './components/AiQuiz';
@@ -74,6 +62,14 @@ import QuizDetail from './components/QuizDetail';
 import EditQuiz from './components/EditQuiz';
 import DiscussionForum from './components/Forum';
 import QuizAccess from './components/QuizAccess';
+import Dashboard from './components/Dashboard';
+import TournamentHome from './components/TournamentHome';
+import CreateTournament from './components/CreateTournament';
+import TournamentCode from './components/TournamentCode';
+import JoinTournament from './components/JoinTournament';
+import TournamentLobby from './components/TournamentLobby';
+import TournamentGame from './components/TournamentGame';
+import TournamentResults from './components/TournamentResults';
 function App() {
   return (
     <Router>
@@ -99,6 +95,14 @@ function App() {
           <Route path="/edit-quiz/:id" element={<EditQuiz />} /> {/* Dynamic route for EditQuiz */}
           <Route path='/forum' element={<DiscussionForum/>} />
           <Route path="/quiz-access" element={<QuizAccess />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/tournament" element={<TournamentHome />} />
+          <Route path="/tournament/create" element={<CreateTournament />} />
+          <Route path="/tournament/code" element={<TournamentCode />} />
+          <Route path="/tournament/join" element={<JoinTournament />} />
+          <Route path="/tournament/lobby/:id" element={<TournamentLobby />} />
+          <Route path="/tournament/game/:id" element={<TournamentGame />} />
+          <Route path="/tournament/results/:id" element={<TournamentResults />} />
         </Routes>
       </div>
     </Router>

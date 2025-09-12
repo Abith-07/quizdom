@@ -107,6 +107,7 @@ export default function QuizAccess() {
   const [tabSwitchWarning, setTabSwitchWarning] = useState('');
   const [violationCount, setViolationCount] = useState(0);
   const [violated, setViolated] = useState(false);
+  const [totalViolations, setTotalViolations] = useState(0);
   const videoRef = useRef(null);
   const detectionIntervalRef = useRef(null);
   const warningTimeoutRef = useRef(null);
@@ -207,10 +208,38 @@ export default function QuizAccess() {
         if (violation) {
           setViolationCount(prev => {
             const newCount = prev + 1;
+            setTotalViolations(prevTotal => prevTotal + 1); // Track total violations for analytics
             if (newCount >= 3) {
               setViolated(true);
               stopWebcam();
               if (detectionIntervalRef.current) clearInterval(detectionIntervalRef.current);
+              
+              // Save violated status to leaderboard immediately
+              const saveViolatedStatus = async () => {
+                try {
+                  const auth = getAuth();
+                  const user = auth.currentUser;
+                  if (user) {
+                    const docId = `${quiz.quizCode || quiz.id || 'unknown'}_${user.uid}`;
+                    const lbRef = doc(db, 'leaderboard', docId);
+                    const existing = await getDoc(lbRef);
+                    if (!existing.exists()) {
+                      await setDoc(lbRef, {
+                        userId: user.uid,
+                        name: user.displayName || user.email || 'User',
+                        points: 'violated',
+                        quizCode: quiz.quizCode || null,
+                        ownerId: quiz.ownerId || null,
+                        violationCount: totalViolations + 1, // Store violation count for analytics
+                        createdAt: serverTimestamp(),
+                      });
+                    }
+                  }
+                } catch (e) {
+                  console.error('Failed to save violated status:', e);
+                }
+              };
+              saveViolatedStatus();
             }
             return newCount;
           });
@@ -290,6 +319,7 @@ export default function QuizAccess() {
             points: calculatedScore,
             quizCode: quiz.quizCode || null,
             ownerId: quiz.ownerId || null,
+            violationCount: totalViolations, // Store violation count for analytics
             createdAt: serverTimestamp(),
           });
         }
@@ -311,10 +341,35 @@ export default function QuizAccess() {
     setModalIsOpen(true);
   };
 
-  const handleEndQuiz = () => {
+  const handleEndQuiz = async () => {
     if (detectionIntervalRef.current) clearInterval(detectionIntervalRef.current);
     stopWebcam();
     setBackConfirmIsOpen(false);
+    
+    // Save violated status to leaderboard
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (user) {
+        const docId = `${quiz.quizCode || quiz.id || 'unknown'}_${user.uid}`;
+        const lbRef = doc(db, 'leaderboard', docId);
+        const existing = await getDoc(lbRef);
+        if (!existing.exists()) {
+          await setDoc(lbRef, {
+            userId: user.uid,
+            name: user.displayName || user.email || 'User',
+            points: 'violated',
+            quizCode: quiz.quizCode || null,
+            ownerId: quiz.ownerId || null,
+            violationCount: totalViolations, // Store violation count for analytics
+            createdAt: serverTimestamp(),
+          });
+        }
+      }
+    } catch (e) {
+      console.error('Failed to save violated status:', e);
+    }
+    
     navigate('/EnterQuizCode');
   };
 
