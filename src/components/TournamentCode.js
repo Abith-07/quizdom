@@ -1,44 +1,46 @@
 import React, { useEffect, useState } from 'react';
 import Header from './Header';
 import { db } from '../firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 
 export default function TournamentCode() {
-  const [code, setCode] = useState('');
-  const [info, setInfo] = useState(null);
+  const [tournaments, setTournaments] = useState([]);
   const [error, setError] = useState('');
 
-  const fetchInfo = async () => {
-    try {
-      setError('');
-      const q = query(collection(db, 'tournaments'), where('code', '==', code));
-      const snap = await getDocs(q);
-      if (snap.empty) { setInfo(null); setError('No tournament found'); return; }
-      setInfo(snap.docs[0].data());
-    } catch (e) {
-      setError(e.message || 'Failed to fetch');
-    }
-  };
+  useEffect(() => {
+    const fetchTournaments = async () => {
+      try {
+        setError('');
+        const snap = await getDocs(collection(db, 'tournaments'));
+        if (snap.empty) { setError('No tournaments found'); setTournaments([]); return; }
+        const tournamentList = snap.docs.map(doc => doc.data());
+        setTournaments(tournamentList);
+      } catch (e) {
+        setError(e.message || 'Failed to fetch tournaments');
+      }
+    };
+
+    fetchTournaments();
+  }, []);
 
   return (
     <div>
       <Header />
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-        <div className="bg-white rounded-xl shadow-md w-full max-w-xl p-8">
-          <h1 className="text-2xl font-bold mb-6 text-center">Tournament Code</h1>
-          <div className="flex gap-2 mb-4">
-            <input value={code} onChange={e=>setCode(e.target.value)} placeholder="Enter access code" className="flex-1 border rounded p-2" />
-            <button onClick={fetchInfo} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded">Fetch</button>
-          </div>
+        <div className="w-full max-w-4xl">
+          <h1 className="text-2xl font-bold mb-6 text-center">Available Tournaments</h1>
           {error && <p className="text-red-600 mb-2 text-center">{error}</p>}
-          {info && (
-            <div className="border rounded p-4">
-              <p><span className="font-semibold">Topic:</span> {info.topic}</p>
-              <p><span className="font-semibold">Questions:</span> {info.numQuestions}</p>
-              <p><span className="font-semibold">Teams:</span> {info.numTeams}</p>
-              <p><span className="font-semibold">Access Code:</span> {info.code}</p>
-            </div>
-          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {tournaments.map((tournament, index) => (
+              <div key={index} className="bg-white rounded-xl shadow-md p-4">
+                <h2 className="text-xl font-semibold mb-2">{tournament.topic}</h2>
+                <p><span className="font-semibold">Subject:</span> {tournament.subject}</p>
+                <p><span className="font-semibold">Questions:</span> {tournament.numQuestions}</p>
+                <p><span className="font-semibold">Teams:</span> {tournament.numTeams}</p>
+                <p><span className="font-semibold">Access Code:</span> {tournament.code}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

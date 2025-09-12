@@ -9,13 +9,14 @@ export default function CreateTournament() {
   const [topic, setTopic] = useState('');
   const [numQuestions, setNumQuestions] = useState(10);
   const [numTeams, setNumTeams] = useState(2);
+  const [subject, setSubject] = useState(''); // New state for the subject
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [accessCode, setAccessCode] = useState('');
   const auth = getAuth();
 
   const handleCreate = async () => {
-    if (!topic || !numQuestions || !numTeams) {
+    if (!topic || !numQuestions || !numTeams || !subject) { // Added subject validation
       setError('Please fill all fields');
       return;
     }
@@ -39,6 +40,7 @@ export default function CreateTournament() {
         topic,
         numQuestions: Number(numQuestions),
         numTeams: Number(numTeams),
+        subject, // Added subject to tournament data
         code,
         status: 'pending',
         ownerId: auth.currentUser ? auth.currentUser.uid : null,
@@ -70,6 +72,11 @@ export default function CreateTournament() {
           <h1 className="text-2xl font-bold mb-6 text-center">Create Tournament</h1>
           {error && <p className="text-red-600 mb-3 text-center">{error}</p>}
           <div className="space-y-4">
+            
+             <div>
+              <label className="block text-sm font-semibold mb-1">Subject</label>
+              <input value={subject} onChange={e=>setSubject(e.target.value)} className="w-full border rounded p-2" placeholder="e.g., Computer Science" />
+            </div>
             <div>
               <label className="block text-sm font-semibold mb-1">Topic</label>
               <input value={topic} onChange={e=>setTopic(e.target.value)} className="w-full border rounded p-2" placeholder="e.g., Python Basics" />
