@@ -73,7 +73,7 @@ import TournamentResults from './components/TournamentResults';
 function App() {
   return (
     <Router>
-      <div className="App">
+      <div className="App" data-testid="app-root">
         <Routes>
           <Route path="/" element={<Navigate to="/mainhome" />} />
           <Route path="/mainhome" element={<MainHome />} />

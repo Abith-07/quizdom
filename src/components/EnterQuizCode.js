@@ -80,6 +80,7 @@ export default function EnterQuizCode() {
               <input
                 type="text"
                 value={quizCode}
+                data-testid="quiz-code-input"
                 onChange={(e) => setQuizCode(e.target.value)}
                 required
                 className="border border-gray-300 rounded w-full p-2"
