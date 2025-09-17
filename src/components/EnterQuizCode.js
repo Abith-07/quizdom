@@ -79,6 +79,7 @@ export default function EnterQuizCode() {
               <label className="block mb-1 font-semibold">Quiz Code:</label>
               <input
                 type="text"
+                name="quizCode"
                 value={quizCode}
                 onChange={(e) => setQuizCode(e.target.value)}
                 required
@@ -89,6 +90,7 @@ export default function EnterQuizCode() {
               <label className="block mb-1 font-semibold">Access Key:</label>
               <input
                 type="password"
+                name="accessKey"
                 value={accessKey}
                 onChange={(e) => setAccessKey(e.target.value)}
                 required

@@ -91,6 +91,15 @@ function renderOptionWithCode(option) {
   return elements;
 }
 
+// Helper: get correct answer text for a question
+export const getCorrectAnswerText = (q) => {
+    if (q.answer && typeof q.answer === "string" && q.answer.length === 1) {
+      const idx = q.answer.charCodeAt(0) - 65;
+      return q.options[idx];
+    }
+    return q.answer;
+  };
+
 export default function QuizAccess() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -273,15 +282,6 @@ export default function QuizAccess() {
       videoRef.current.srcObject = null;
       streamRef.current = null;
     }
-  };
-
-  // Helper: get correct answer text for a question
-  const getCorrectAnswerText = (q) => {
-    if (q.answer && typeof q.answer === "string" && q.answer.length === 1) {
-      const idx = q.answer.charCodeAt(0) - 65;
-      return q.options[idx];
-    }
-    return q.answer;
   };
 
   // Submit quiz
